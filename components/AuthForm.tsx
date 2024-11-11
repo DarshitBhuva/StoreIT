@@ -17,13 +17,15 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import Link from 'next/link';
+import { createAccout } from '@/lib/actions/user.action';
+import OTPModal from './OTPModal';
 
 type FormType = "sign-in" | "sign-up";
 
-const authFormSchema = (formType : FormType) => {
+const authFormSchema = (formType: FormType) => {
     return z.object({
-        email : z.string().email(),
-        fullName : formType === "sign-up" ? z.string().min(2).max(50) : z.string().optional(),
+        email: z.string().email(),
+        fullName: formType === "sign-up" ? z.string().min(2).max(50) : z.string().optional(),
     })
 }
 
@@ -31,21 +33,35 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [accountId, setAccountId] = useState("");
     // 1. Define your form.
     const formSchema = authFormSchema(type);
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             fullName: "",
-            email : ""
+            email: ""
         },
     });
 
     // 2. Define a submit handler.
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values)
+        setIsLoading(true);
+        setErrorMessage("");
+        try {
+            const user = await createAccout({
+                fullName: values.fullName || "",
+                email: values.email
+            })
+
+            setAccountId(user.accountId);
+        }
+        catch {
+            setErrorMessage("Failed to create account, please try again.")
+        }
+        finally {
+            setIsLoading(false);
+        }
     }
     return (
         <>
@@ -112,6 +128,11 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
                 </form>
             </Form>
+
+            {/* OTP verification */}
+            {accountId &&
+                <OTPModal email={form.getValues("email")} accountId={accountId} />
+            }
         </>
     )
 }
