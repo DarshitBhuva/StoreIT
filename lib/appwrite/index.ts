@@ -12,6 +12,7 @@ export const createSessionClient = async () => {
         .setProject(appwriteConfig.projectId)
 
     const session = (await cookies()).get("appwrite-session");
+    
 
     if (!session || !session.value)
         throw new Error("No session");
@@ -22,7 +23,7 @@ export const createSessionClient = async () => {
         get account() {
             return new Account(client);
         },
-        get database() {
+        get databases() {
             return new Databases(client);
         }
     }
