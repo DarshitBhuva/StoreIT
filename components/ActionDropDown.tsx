@@ -25,9 +25,10 @@ import Link from 'next/link';
 import { constructDownloadUrl } from '@/lib/utils';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { renameFile } from '@/lib/actions/file.action';
+import { deleteFile, renameFile, updateFileUsers } from '@/lib/actions/file.action';
 import { usePathname } from 'next/navigation';
-import { FileDetails } from './ActionsModalContent';
+import { FileDetails, ShareInput } from './ActionsModalContent';
+
 
 
 
@@ -38,6 +39,7 @@ const ActionDropDown = ({ file }: { file: Models.Document }) => {
     const [action, setAction] = useState<ActionType | null>(null);
     const [name, setName] = useState(file.name);
     const [isLoading, setIsLoading] = useState(false)
+    const [emails, setEmails] = useState<string[]>([])
     const path = usePathname();
     const closeAllModals = () => {
         setIsModalOpen(false);
@@ -47,23 +49,32 @@ const ActionDropDown = ({ file }: { file: Models.Document }) => {
     }
 
     const handleActions = async () => {
-        if(!action) return;
-        
+        if (!action) return;
+
         setIsLoading(true);
         let success = false;
 
         const actions = {
-            rename : () => renameFile({fileId : file.$id, name, extension: file.extension, path}),
-            share : () => console.log("share"),
-            delete : () => console.log("delete")
+            rename: () => renameFile({ fileId: file.$id, name, extension: file.extension, path }),
+            share: () => updateFileUsers({ fileId: file.$id, emails, path }),
+            delete: () => deleteFile({fileId : file.$id, bucketField : file.bucketField, path})
 
         }
         success = await actions[action.value as keyof typeof actions]();
 
-        if(success)
+        if (success)
             closeAllModals();
 
         setIsLoading(false);
+    }
+
+    const handleRemoveUser = async (email: string) => {
+        const updateEmails = emails.filter((e) => e !== email);
+        const success = await updateFileUsers({ fileId: file.$id, emails: updateEmails, path });
+
+        if (success)
+            setEmails(updateEmails);
+        closeAllModals();
     }
     const renderDialogContent = () => {
 
@@ -79,7 +90,17 @@ const ActionDropDown = ({ file }: { file: Models.Document }) => {
                     {value === 'rename' && (
                         <Input type='text' value={name} onChange={(e) => setName(e.target.value)} />
                     )}
-                    {value === 'details' && <FileDetails file={file}/>}
+                    {value === 'details' && <FileDetails file={file} />}
+                    {value === 'share' && (
+                        <ShareInput file={file} onInputChange={setEmails} onRemove={handleRemoveUser} />
+                    )}
+
+                    {value === 'delete' && (
+                        <p className='delete-confirmation'>
+                            Are you sure you want to delete {` `} 
+                            <span className='delete-file-name'>{file.name}</span>
+                        </p>
+                    )}
                 </DialogHeader>
                 {['rename', 'delete', 'share'].includes(value) && (
                     <DialogFooter className='flex flex-col gap-3 md:flex-row'>
@@ -87,7 +108,7 @@ const ActionDropDown = ({ file }: { file: Models.Document }) => {
                         <Button onClick={handleActions} className='modal-submit-button'>
                             <p className='capitalize'>{value}</p>
                             {isLoading && (
-                                <Image src="/assets/icons/loader.svg" alt='loader' width={24} height={24} className='animate-spin'/>
+                                <Image src="/assets/icons/loader.svg" alt='loader' width={24} height={24} className='animate-spin' />
                             )}
                         </Button>
                     </DialogFooter>
