@@ -2,7 +2,6 @@ import Card from '@/components/Card';
 import Sort from '@/components/Sort';
 import { getFiles } from '@/lib/actions/file.action';
 import { getFileTypesParams } from '@/lib/utils';
-import { SearchParams } from 'next/dist/server/request/search-params';
 import { Models } from 'node-appwrite';
 import React from 'react'
 
