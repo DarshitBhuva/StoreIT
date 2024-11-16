@@ -20,8 +20,7 @@ export default async function Home() {
   
 
   const usageSummary = getUsageSummary(totalSpace);
-  console.log("UsageSummary : ", usageSummary);
-  
+ 
   return (
 
     <div className="dashboard-container">
