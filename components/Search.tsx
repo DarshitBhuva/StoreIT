@@ -17,17 +17,17 @@ const Search = () => {
   const searchQuery = searchParams.get("query") || "";
   const router = useRouter();
   const path = usePathname();
-  const [debouncedQuery] = useDebounce(query, 1500);
+  const [debouncedQuery] = useDebounce(query, 500);
 
   useEffect(() => {
     const fetchFiles = async () => {
-      if(debouncedQuery.length === 0)
-      {
+      
+      if (debouncedQuery.length === 0) {
         setResult([]);
         setOpen(false);
         return router.push(path.replace(searchParams.toString(), ""));
       }
-      const files = await getFiles({types:[], searchText: debouncedQuery });
+      const files = await getFiles({ types: [], searchText: debouncedQuery });
       setResult(files.documents);
       setOpen(true)
     }
@@ -41,7 +41,7 @@ const Search = () => {
     }
   }, [searchQuery])
 
-  const handleClickItem = (file : Models.Document)=>{
+  const handleClickItem = (file: Models.Document) => {
     setOpen(false);
     setResult([]);
 
@@ -57,15 +57,15 @@ const Search = () => {
           <ul className='search-result'>
             {result.length > 0 ? (
               result.map((file) => (
-                <li key={file.$id} className='flex items-center justify-between' onClick={()=>handleClickItem(file)}>
+                <li key={file.$id} className='flex items-center justify-between' onClick={() => handleClickItem(file)}>
                   <div className="flex cursor-pointer items-center gap-4">
                     <Thumbnail type={file.type} extension={file.extension} url={file.url} className='size-9 min-w-9' />
                     <p className='subtitle-2 line-clamp-1 text-light-100'>{file.name}</p>
                   </div>
 
-                  <FormattedDateTime date={file.$createdAt} className='caption line-clamp-1 text-light-100'/>
+                  <FormattedDateTime date={file.$createdAt} className='caption line-clamp-1 text-light-100' />
                 </li>
-                
+
               ))
             ) : <p className='empty-result'>No files found</p>}
           </ul>

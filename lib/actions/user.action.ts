@@ -63,6 +63,8 @@ export const createAccout = async ({ fullName, email }: { fullName: string, emai
             }
         )
     }
+
+    
     return parseStringify({ accountId });
 }
 
@@ -78,6 +80,7 @@ export const verifySecret = async ({ accountId, password }: { accountId: string,
             httpOnly: true,
             sameSite: 'strict',
             secure: true,
+            maxAge : 60 * 60 * 24 * 7, // 7 days
         })
 
         return parseStringify({ sessionId: session.$id });
